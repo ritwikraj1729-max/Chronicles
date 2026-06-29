@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chronicle </title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- ===== APP CONTAINER ===== -->
+    <div id="app" data-theme="dark">
+
+        <!-- ===== TOP BAR ===== -->
+        <header id="topbar">
+            <div class="topbar-left">
+                <h1 id="appTitle">📜 Chronicle</h1>
+            </div>
+            <div class="topbar-right">
+                <button id="themeToggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
+            </div>
+        </header>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main id="mainContent">
+
+            <!-- ===== DASHBOARD ===== -->
+            <section id="dashboard" class="view active">
+                <div class="dashboard-header">
+                    <h2>Your Timelines</h2>
+                    <p id="timelineCount">0 timelines</p>
+                </div>
+                <div id="timelineGrid" class="timeline-grid">
+                    <!-- cards rendered by JS -->
+                </div>
+                <button id="createTimelineBtn" class="fab" aria-label="Create new timeline">
+                    <span class="fab-icon">+</span>
+                </button>
+                <div id="emptyDashboard" class="empty-state">
+                    <div class="empty-illustration">📋</div>
+                    <h3>No timelines yet.</h3>
+                    <p>Start organizing your story.</p>
+                    <button id="emptyCreateBtn" class="btn btn-primary">Create your first timeline</button>
+                </div>
+            </section>
+
+            <!-- ===== TIMELINE VIEW ===== -->
+            <section id="timelineView" class="view">
+                <!-- header -->
+                <div class="timeline-header">
+                    <button id="backToDashboard" class="btn btn-ghost" aria-label="Back to dashboard">← Back</button>
+                    <div class="timeline-title-group">
+                        <h2 id="timelineViewTitle">Timeline</h2>
+                        <span id="timelineViewIcon" class="timeline-icon"></span>
+                        <p id="timelineViewDesc" class="timeline-desc"></p>
+                    </div>
+                    <div class="timeline-actions">
+                        <button id="exportTimelineBtn" class="btn btn-secondary" title="Export as JSON">📤 Export</button>
+                        <button id="importTimelineBtn" class="btn btn-secondary" title="Import from JSON">📥 Import</button>
+                        <button id="deleteTimelineBtn" class="btn btn-danger" title="Delete timeline">🗑</button>
+                    </div>
+                </div>
+
+                <!-- stats -->
+                <div id="statsBar" class="stats-bar">
+                    <div class="stat"><span class="stat-label">Events</span><span id="statEvents" class="stat-value">0</span></div>
+                    <div class="stat"><span class="stat-label">Oldest</span><span id="statOldest" class="stat-value">—</span></div>
+                    <div class="stat"><span class="stat-label">Newest</span><span id="statNewest" class="stat-value">—</span></div>
+                    <div class="stat"><span class="stat-label">Categories</span><span id="statCategories" class="stat-value">0</span></div>
+                    <div class="stat"><span class="stat-label">Last edited</span><span id="statEdited" class="stat-value">—</span></div>
+                </div>
+
+                <!-- controls -->
+                <div class="timeline-controls">
+                    <div class="view-switcher">
+                        <button id="viewTimelineBtn" class="btn btn-switch active" data-view="timeline">📅 Timeline</button>
+                        <button id="viewListBtn" class="btn btn-switch" data-view="list">📋 List</button>
+                    </div>
+                    <div class="search-wrap">
+                        <input type="text" id="searchInput" placeholder="Search events…" aria-label="Search events" />
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <button id="addEventBtn" class="btn btn-primary">+ Add Event</button>
+                </div>
+
+                <!-- timeline display -->
+                <div id="timelineDisplay" class="timeline-display">
+                    <!-- rendered by JS -->
+                </div>
+
+                <!-- empty state for events -->
+                <div id="emptyEvents" class="empty-state">
+                    <div class="empty-illustration">📭</div>
+                    <h3>This timeline is empty.</h3>
+                    <p>Add your first event to start building your story.</p>
+                    <button id="emptyEventBtn" class="btn btn-primary">Add your first event</button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ===== MODAL OVERLAY ===== -->
+        <div id="modalOverlay" class="modal-overlay hidden">
+            <div id="modalBox" class="modal-box" role="dialog" aria-modal="true">
+                <button id="modalClose" class="modal-close" aria-label="Close dialog">✕</button>
+                <div id="modalBody">
+                    <!-- dynamic content -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
