@@ -3,115 +3,1899 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chronicle </title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>" />
-    <link rel="stylesheet" href="style.css" />
+    <title>Chronicles</title>
+    <style>
+        /* ============================================================
+           CHRONICLES — design tokens
+           A ledger for history students: deep charcoal surfaces, a
+           restrained serif for dates and numerals (the one place the
+           design allows itself period character), and a muted blue
+           accent used sparingly as a marker of "now selected / now open".
+           ============================================================ */
+        :root {
+            --bg: #15161a;
+            --bg-elevated: #1b1d22;
+            --surface: #1f2126;
+            --surface-hover: #262930;
+            --surface-active: #2a2d35;
+            --border: #2b2e35;
+            --border-strong: #3a3d46;
+            --text: #eceef2;
+            --text-secondary: #9aa0ab;
+            --text-tertiary: #6b7178;
+            --accent: #7398d6;
+            --accent-hover: #8babe0;
+            --accent-soft: rgba(115, 152, 214, 0.14);
+            --accent-soft-strong: rgba(115, 152, 214, 0.26);
+            --danger: #d0776f;
+            --danger-soft: rgba(208, 119, 111, 0.14);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+            --font-display: 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        ::selection {
+            background: var(--accent-soft-strong);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        p {
+            margin: 0;
+        }
+        button {
+            font-family: inherit;
+        }
+        input,
+        textarea {
+            font-family: inherit;
+        }
+
+        a,
+        button {
+            cursor: pointer;
+        }
+
+        :focus {
+            outline: none;
+        }
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ============================================================
+           App shell
+           ============================================================ */
+        #app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(21, 22, 26, 0.86);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+        .brand {
+            font-family: var(--font-display);
+            font-size: 20px;
+            letter-spacing: 0.01em;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--text);
+        }
+        .brand-mark {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+        .crumb-sep {
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+        .crumb-current {
+            font-size: 15px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 40vw;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============================================================
+           Buttons
+           ============================================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            padding: 9px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.1s var(--ease);
+            white-space: nowrap;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #10131c;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border-color: transparent;
+        }
+        .btn-ghost:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: var(--border-strong);
+        }
+        .btn-danger:hover {
+            background: var(--danger-soft);
+            border-color: var(--danger);
+        }
+        .btn-icon {
+            padding: 8px;
+            border-radius: var(--radius-sm);
+        }
+        .btn-lg {
+            padding: 13px 26px;
+            font-size: 15px;
+            border-radius: var(--radius-md);
+        }
+        .btn:disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        svg.icon {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+
+        /* ============================================================
+           Home / dashboard
+           ============================================================ */
+        .home-hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 24px;
+            gap: 22px;
+            animation: fadeIn 0.5s var(--ease);
+        }
+        .home-hero .glyph {
+            width: 46px;
+            height: 46px;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+        .home-hero h1 {
+            font-family: var(--font-display);
+            font-size: 46px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        .home-hero .subtitle {
+            color: var(--text-secondary);
+            font-size: 17px;
+        }
+        .home-hero .btn-lg {
+            margin-top: 14px;
+        }
+
+        .dashboard {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 32px 80px;
+            animation: fadeIn 0.4s var(--ease);
+        }
+        .dashboard-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+        .dashboard-header h1 {
+            font-family: var(--font-display);
+            font-size: 30px;
+            font-weight: 500;
+        }
+        .dashboard-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+        .timeline-card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 22px 20px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+            transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.15s var(--ease);
+            animation: cardIn 0.35s var(--ease) both;
+        }
+        .timeline-card:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-strong);
+            transform: translateY(-2px);
+        }
+        .timeline-card:hover .card-menu-btn {
+            opacity: 1;
+        }
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .card-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        .card-menu-btn {
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .card-menu-btn:focus-visible {
+            opacity: 1;
+        }
+        .card-name {
+            font-size: 17px;
+            font-weight: 600;
+        }
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .empty-note {
+            color: var(--text-tertiary);
+            font-size: 14px;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        /* ============================================================
+           Timeline page — CHROME-STYLE TABS
+           ============================================================ */
+        .timeline-page {
+            max-width: 980px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 32px 100px;
+            animation: fadeIn 0.35s var(--ease);
+        }
+        .tp-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .tp-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .tp-color-dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .tp-title {
+            font-family: var(--font-display);
+            font-size: 27px;
+            font-weight: 500;
+        }
+        .tp-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 6px;
+            max-width: 60ch;
+        }
+        .tp-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .tp-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 9px 12px;
+            flex: 1;
+            min-width: 200px;
+            max-width: 340px;
+            transition: border-color 0.15s;
+        }
+        .search-box:focus-within {
+            border-color: var(--accent);
+        }
+        .search-box svg {
+            color: var(--text-tertiary);
+        }
+        .search-box input {
+            border: none;
+            background: none;
+            outline: none;
+            color: var(--text);
+            font-size: 14px;
+            width: 100%;
+        }
+        .search-box input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .tp-toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ============================================================
+           TAB BAR — like Chrome tabs
+           ============================================================ */
+        .tab-bar {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            padding: 6px 6px 0 6px;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            overflow-x: auto;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .tab-bar::-webkit-scrollbar {
+            height: 3px;
+        }
+        .tab-bar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .tab-bar::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 100px;
+            max-width: 200px;
+            padding: 10px 14px 8px 14px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.15s var(--ease);
+            position: relative;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            border-radius: 4px;
+            background: transparent;
+            transition: background 0.2s var(--ease), left 0.2s var(--ease), right 0.2s var(--ease);
+        }
+        .tab-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+        .tab-btn:hover::after {
+            background: var(--border-strong);
+        }
+        .tab-btn.active {
+            background: var(--surface);
+            color: var(--text);
+        }
+        .tab-btn.active::after {
+            background: var(--accent);
+            left: 15%;
+            right: 15%;
+        }
+        .tab-btn .tab-count {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            background: var(--bg-elevated);
+            padding: 0 7px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+            font-weight: 400;
+        }
+        .tab-btn.active .tab-count {
+            border-color: var(--border-strong);
+            color: var(--text-secondary);
+        }
+        .tab-btn .tab-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ============================================================
+           TAB CONTENT PANEL
+           ============================================================ */
+        .tab-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            padding: 20px 20px 24px;
+            min-height: 140px;
+            animation: fadeIn 0.25s var(--ease);
+        }
+        .tab-panel .panel-empty {
+            color: var(--text-tertiary);
+            font-size: 13px;
+            padding: 20px 0;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* ============================================================
+           Timeline events inside tab panel — vertical timeline style
+           ============================================================ */
+        .timeline-events {
+            position: relative;
+            padding-left: 32px;
+        }
+        .timeline-events::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border-strong);
+            border-radius: 4px;
+        }
+
+        .event-item {
+            position: relative;
+            padding: 10px 0 10px 24px;
+            border-left: 2px solid transparent;
+            transition: border-color 0.2s var(--ease), background 0.15s var(--ease);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin-left: -2px;
+        }
+        .event-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 16px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--border-strong);
+            transition: all 0.2s var(--ease);
+            z-index: 2;
+        }
+        .event-item:hover::before {
+            border-color: var(--accent);
+            background: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+        .event-item:hover {
+            background: var(--surface-hover);
+            border-left-color: var(--accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .event-item .event-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .event-item .event-date-tag {
+            font-family: var(--font-display);
+            font-size: 14px;
+            color: var(--accent);
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 96px;
+            padding-top: 1px;
+            letter-spacing: 0.01em;
+        }
+        .event-item .event-info {
+            flex: 1;
+            min-width: 140px;
+        }
+        .event-item .event-name {
+            font-size: 14.5px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .event-item .event-desc {
+            font-size: 12.5px;
+            color: var(--text-tertiary);
+            margin-top: 1px;
+            line-height: 1.4;
+        }
+        .event-item .event-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .event-item .stars {
+            color: var(--accent);
+            font-size: 12px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .event-item .stars .off {
+            color: var(--border-strong);
+        }
+        .event-item .row-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.15s var(--ease);
+        }
+        .event-item:hover .row-actions,
+        .event-item:focus-within .row-actions {
+            opacity: 1;
+        }
+
+        /* ============================================================
+           Modals / dialogs
+           ============================================================ */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 11, 14, 0.6);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 100;
+            animation: overlayIn 0.18s var(--ease);
+        }
+        .modal {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 440px;
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: modalIn 0.22s var(--ease);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 22px 4px;
+        }
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .modal-body {
+            padding: 16px 22px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 18px 22px 22px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .field label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .field input[type="text"],
+        .field input[type="number"],
+        .field textarea,
+        .field select {
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s;
+            width: 100%;
+        }
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
+            border-color: var(--accent);
+        }
+        .field textarea {
+            resize: vertical;
+            min-height: 64px;
+            font-family: inherit;
+        }
+        .field-row {
+            display: flex;
+            gap: 12px;
+        }
+        .field-row .field {
+            flex: 1;
+        }
+        .hint {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .color-swatches {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .swatch {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+        .swatch:hover {
+            transform: scale(1.1);
+        }
+        .swatch.selected {
+            border-color: var(--text);
+        }
+
+        .type-picker {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .type-option {
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            padding: 16px 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            transition: all 0.15s var(--ease);
+        }
+        .type-option:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
+        .type-option svg {
+            width: 20px;
+            height: 20px;
+        }
+        .type-option .t-label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .type-option .t-example {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .star-picker {
+            display: flex;
+            gap: 6px;
+        }
+        .star-btn {
+            background: none;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            letter-spacing: 2px;
+            transition: all 0.15s;
+        }
+        .star-btn.active {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            align-self: flex-start;
+        }
+
+        .confirm-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .confirm-text strong {
+            color: var(--text);
+        }
+
+        /* menu popover */
+        .menu-pop {
+            position: absolute;
+            z-index: 60;
+            min-width: 170px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            animation: menuIn 0.14s var(--ease);
+        }
+        .menu-pop button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text);
+            text-align: left;
+            padding: 9px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+        }
+        .menu-pop button:hover {
+            background: var(--surface-hover);
+        }
+        .menu-pop button.danger {
+            color: var(--danger);
+        }
+        .menu-pop button.danger:hover {
+            background: var(--danger-soft);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            color: var(--text);
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            box-shadow: var(--shadow-lg);
+            z-index: 200;
+            animation: toastIn 0.25s var(--ease);
+        }
+
+        /* ============================================================
+           Animations
+           ============================================================ */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes overlayIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes menuIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 8px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001s !important;
+                transition-duration: 0.001s !important;
+            }
+        }
+
+        /* ============================================================
+           Responsive
+           ============================================================ */
+        @media (max-width: 720px) {
+            .topbar {
+                padding: 16px 18px;
+            }
+            .dashboard {
+                padding: 24px 18px 60px;
+            }
+            .timeline-page {
+                padding: 22px 16px 80px;
+            }
+            .home-hero h1 {
+                font-size: 34px;
+            }
+            .tp-header {
+                flex-direction: column;
+            }
+            .tp-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box {
+                max-width: none;
+            }
+            .tp-toolbar-right {
+                justify-content: space-between;
+            }
+            .tab-btn {
+                flex: 1 0 auto;
+                min-width: 70px;
+                max-width: none;
+                font-size: 12px;
+                padding: 8px 10px 6px;
+            }
+            .tab-btn .tab-icon {
+                font-size: 12px;
+            }
+            .tab-btn .tab-count {
+                font-size: 10px;
+                padding: 0 5px;
+            }
+            .tab-bar {
+                gap: 1px;
+                padding: 4px 4px 0 4px;
+                border-radius: var(--radius-md) var(--radius-md) 0 0;
+            }
+            .tab-panel {
+                padding: 14px 14px 18px;
+                border-radius: 0 0 var(--radius-md) var(--radius-md);
+                min-height: 100px;
+            }
+            .event-item .event-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .event-item .event-right {
+                margin-left: 0;
+                align-self: flex-end;
+                padding-top: 4px;
+            }
+            .event-item .row-actions {
+                opacity: 1;
+            }
+            .field-row {
+                flex-direction: column;
+            }
+            .type-picker {
+                grid-template-columns: 1fr;
+            }
+            .event-item .event-date-tag {
+                min-width: 70px;
+                font-size: 13px;
+            }
+            .timeline-events {
+                padding-left: 24px;
+            }
+            .event-item {
+                padding: 8px 0 8px 18px;
+            }
+            .event-item::before {
+                left: -6px;
+                width: 10px;
+                height: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tab-btn {
+                min-width: 55px;
+                font-size: 11px;
+                padding: 6px 8px 4px;
+            }
+            .tab-btn .tab-icon {
+                font-size: 10px;
+            }
+            .tab-btn .tab-count {
+                font-size: 9px;
+                padding: 0 4px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div id="app"></div>
+    <div id="modal-root"></div>
+    <div id="toast-root"></div>
 
-    <!-- ===== APP CONTAINER ===== -->
-    <div id="app" data-theme="dark">
+    <script>
+        "use strict";
+        /* ================================================================
+           CHRONICLES
+           A chronology tool for history students. Vanilla JS, single file.
+           Data persists to localStorage. No frameworks, no network calls.
+           ================================================================ */
 
-        <!-- ===== TOP BAR ===== -->
-        <header id="topbar">
-            <div class="topbar-left">
-                <h1 id="appTitle">📜 Chronicle</h1>
-            </div>
-            <div class="topbar-right">
-                <button id="themeToggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
-            </div>
-        </header>
+        /* ---------- Constants ---------- */
+        var STORAGE_KEY = "chronicles_data_v1";
+        var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+            "November", "December"
+        ];
+        var ACCENT_PRESETS = ["#7398d6", "#d0776f", "#7fb88f", "#d6b673", "#a482c9", "#5fb8c9", "#c97fa8", "#9aa0ab"];
 
-        <!-- ===== MAIN CONTENT ===== -->
-        <main id="mainContent">
+        var ICONS = {
+            brand: '<svg class="brand-mark icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+            plus: '<svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+            search: '<svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+            chevron: '<svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+            dots: '<svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>',
+            edit: '<svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+            trash: '<svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>',
+            back: '<svg class="icon" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
+            period: '<svg class="icon" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 8v8M20 8v8"/></svg>',
+            exact: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>',
+            monthyear: '<svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>',
+            year: '<svg class="icon" viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M8 19V9l4-4 4 4v10"/></svg>'
+        };
 
-            <!-- ===== DASHBOARD ===== -->
-            <section id="dashboard" class="view active">
-                <div class="dashboard-header">
-                    <h2>Your Timelines</h2>
-                    <p id="timelineCount">0 timelines</p>
-                </div>
-                <div id="timelineGrid" class="timeline-grid">
-                    <!-- cards rendered by JS -->
-                </div>
-                <button id="createTimelineBtn" class="fab" aria-label="Create new timeline">
-                    <span class="fab-icon">+</span>
-                </button>
-                <div id="emptyDashboard" class="empty-state">
-                    <div class="empty-illustration">📋</div>
-                    <h3>No timelines yet.</h3>
-                    <p>Start organizing your story.</p>
-                    <button id="emptyCreateBtn" class="btn btn-primary">Create your first timeline</button>
-                </div>
-            </section>
+        /* ---------- Data layer ---------- */
+        function loadData() {
+            try {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return { timelines: [] };
+                var parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.timelines)) return { timelines: [] };
+                return parsed;
+            } catch (err) {
+                console.error("Chronicles: failed to load data", err);
+                return { timelines: [] };
+            }
+        }
 
-            <!-- ===== TIMELINE VIEW ===== -->
-            <section id="timelineView" class="view">
-                <!-- header -->
-                <div class="timeline-header">
-                    <button id="backToDashboard" class="btn btn-ghost" aria-label="Back to dashboard">← Back</button>
-                    <div class="timeline-title-group">
-                        <h2 id="timelineViewTitle">Timeline</h2>
-                        <span id="timelineViewIcon" class="timeline-icon"></span>
-                        <p id="timelineViewDesc" class="timeline-desc"></p>
-                    </div>
-                    <div class="timeline-actions">
-                        <button id="exportTimelineBtn" class="btn btn-secondary" title="Export as JSON">📤 Export</button>
-                        <button id="importTimelineBtn" class="btn btn-secondary" title="Import from JSON">📥 Import</button>
-                        <button id="deleteTimelineBtn" class="btn btn-danger" title="Delete timeline">🗑</button>
-                    </div>
-                </div>
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (err) {
+                console.error("Chronicles: failed to save data", err);
+                showToast("Couldn't save — storage may be full.");
+            }
+        }
 
-                <!-- stats -->
-                <div id="statsBar" class="stats-bar">
-                    <div class="stat"><span class="stat-label">Events</span><span id="statEvents" class="stat-value">0</span></div>
-                    <div class="stat"><span class="stat-label">Oldest</span><span id="statOldest" class="stat-value">—</span></div>
-                    <div class="stat"><span class="stat-label">Newest</span><span id="statNewest" class="stat-value">—</span></div>
-                    <div class="stat"><span class="stat-label">Categories</span><span id="statCategories" class="stat-value">0</span></div>
-                    <div class="stat"><span class="stat-label">Last edited</span><span id="statEdited" class="stat-value">—</span></div>
-                </div>
+        function genId() {
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
 
-                <!-- controls -->
-                <div class="timeline-controls">
-                    <div class="view-switcher">
-                        <button id="viewTimelineBtn" class="btn btn-switch active" data-view="timeline">📅 Timeline</button>
-                        <button id="viewListBtn" class="btn btn-switch" data-view="list">📋 List</button>
-                    </div>
-                    <div class="search-wrap">
-                        <input type="text" id="searchInput" placeholder="Search events…" aria-label="Search events" />
-                        <span class="search-icon">🔍</span>
-                    </div>
-                    <button id="addEventBtn" class="btn btn-primary">+ Add Event</button>
-                </div>
+        function getTimeline(id) {
+            return state.timelines.find(function(t) { return t.id === id; });
+        }
 
-                <!-- timeline display -->
-                <div id="timelineDisplay" class="timeline-display">
-                    <!-- rendered by JS -->
-                </div>
+        /* ---------- App state ---------- */
+        var state = loadData();
+        var route = { view: "dashboard", timelineId: null };
+        var searchQuery = "";
 
-                <!-- empty state for events -->
-                <div id="emptyEvents" class="empty-state">
-                    <div class="empty-illustration">📭</div>
-                    <h3>This timeline is empty.</h3>
-                    <p>Add your first event to start building your story.</p>
-                    <button id="emptyEventBtn" class="btn btn-primary">Add your first event</button>
-                </div>
-            </section>
+        /* ---------- Utilities ---------- */
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
 
-        </main>
+        function pluralize(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
 
-        <!-- ===== MODAL OVERLAY ===== -->
-        <div id="modalOverlay" class="modal-overlay hidden">
-            <div id="modalBox" class="modal-box" role="dialog" aria-modal="true">
-                <button id="modalClose" class="modal-close" aria-label="Close dialog">✕</button>
-                <div id="modalBody">
-                    <!-- dynamic content -->
-                </div>
-            </div>
-        </div>
+        function formatPeriod(e) { return e.startYear + "\u2013" + e.endYear; }
 
-    </div>
+        function formatExact(e) { return e.day + " " + MONTHS[e.month - 1] + " " + e.year; }
 
-    <script src="script.js"></script>
+        function formatMonthYear(e) { return MONTHS[e.month - 1] + " " + e.year; }
+
+        function formatYear(e) { return String(e.year); }
+
+        function formatEventDate(e) {
+            if (e.type === "period") return formatPeriod(e);
+            if (e.type === "exact") return formatExact(e);
+            if (e.type === "monthyear") return formatMonthYear(e);
+            return formatYear(e);
+        }
+
+        function typeLabel(type) {
+            return type === "period" ? "Time Period" : type === "exact" ? "Exact Date" : type === "monthyear" ?
+                "Month & Year" : "Year";
+        }
+
+        function sortKey(e) {
+            if (e.type === "period") return e.startYear + (e.endYear - e.startYear) / 100000;
+            if (e.type === "exact") return e.year + (e.month - 1) / 12 + (e.day - 1) / 366;
+            if (e.type === "monthyear") return e.year + (e.month - 1) / 12;
+            return e.year;
+        }
+
+        function compareEvents(a, b) {
+            var ka = sortKey(a),
+                kb = sortKey(b);
+            if (ka !== kb) return ka - kb;
+            if (a.type === "period" && b.type === "period") return a.endYear - b.endYear;
+            return 0;
+        }
+
+        function matchesQuery(e, q) {
+            if (!q) return true;
+            var query = q.toLowerCase();
+            return (e.name || "").toLowerCase().indexOf(query) !== -1 ||
+                (e.description || "").toLowerCase().indexOf(query) !== -1;
+        }
+
+        function starsMarkup(importance) {
+            var out = "";
+            for (var i = 1; i <= 3; i++) {
+                out += i <= importance ? "\u2605" : '<span class="off">\u2605</span>';
+            }
+            return '<span class="stars" aria-label="Importance ' + importance + ' of 3">' + out + "</span>";
+        }
+
+        /* ---------- Toasts ---------- */
+        var toastTimer = null;
+
+        function showToast(msg) {
+            var root = document.getElementById("toast-root");
+            root.innerHTML = '<div class="toast" role="status">' + escapeHtml(msg) + "</div>";
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function() { root.innerHTML = ""; }, 2400);
+        }
+
+        /* ---------- Navigation ---------- */
+        function goHome() {
+            route = { view: "dashboard", timelineId: null };
+            renderApp();
+        }
+
+        function openTimeline(id) {
+            route = { view: "timeline", timelineId: id };
+            searchQuery = "";
+            renderApp();
+        }
+
+        /* ================================================================
+           RENDER: top-level
+           ================================================================ */
+        function renderApp() {
+            var app = document.getElementById("app");
+            var html = buildTopbar();
+            if (route.view === "dashboard") {
+                html += buildDashboard();
+            } else {
+                var timeline = getTimeline(route.timelineId);
+                if (!timeline) { route = { view: "dashboard", timelineId: null };
+                    html = buildTopbar() + buildDashboard(); } else html += buildTimelinePage(timeline);
+            }
+            app.innerHTML = html;
+        }
+
+        function buildTopbar() {
+            var crumb = "";
+            if (route.view === "timeline") {
+                var t = getTimeline(route.timelineId);
+                if (t) crumb = '<span class="crumb-sep">/</span><span class="crumb-current">' + escapeHtml(t.name) +
+                "</span>";
+            }
+            return '' +
+                '<header class="topbar">' +
+                '<div class="topbar-left">' +
+                '<button class="brand" data-action="go-home" aria-label="Chronicles home">' + ICONS.brand +
+                "<span>Chronicles</span></button>" +
+                crumb +
+                "</div>" +
+                "</header>";
+        }
+
+        /* ================================================================
+           RENDER: dashboard
+           ================================================================ */
+        function buildDashboard() {
+            if (state.timelines.length === 0) {
+                return '' +
+                    '<div class="home-hero">' +
+                    '<svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3.2 1.8"/></svg>' +
+                    "<h1>Chronicles</h1>" +
+                    '<p class="subtitle">Organize history by chronology.</p>' +
+                    '<button class="btn btn-primary btn-lg" data-action="open-create-timeline">' + ICONS.plus +
+                    " Create Timeline</button>" +
+                    "</div>";
+            }
+            var cards = state.timelines.map(function(t) {
+                var count = t.events.length;
+                return '' +
+                    '<div class="timeline-card" data-action="open-timeline" data-id="' + t.id +
+                    '" tabindex="0" role="button" aria-label="Open ' + escapeHtml(t.name) + '">' +
+                    '<div class="card-top">' +
+                    '<span class="card-dot" style="background:' + t.color + '"></span>' +
+                    '<button class="btn btn-ghost btn-icon card-menu-btn" data-action="timeline-menu" data-id="' +
+                    t.id + '" aria-label="Timeline options" aria-haspopup="true">' + ICONS.dots + "</button>" +
+                    "</div>" +
+                    '<div>' +
+                    '<div class="card-name">' + escapeHtml(t.name) + "</div>" +
+                    (t.description ? '<div class="card-desc">' + escapeHtml(t.description) + "</div>" : "") +
+                    "</div>" +
+                    '<div class="card-meta">' + pluralize(count, "event") + "</div>" +
+                    "</div>";
+            }).join("");
+
+            return '' +
+                '<div class="dashboard">' +
+                '<div class="dashboard-header">' +
+                '<div><h1>Your timelines</h1><p>' + pluralize(state.timelines.length, "timeline") + "</p></div>" +
+                '<button class="btn btn-primary" data-action="open-create-timeline">' + ICONS.plus +
+                " Create Timeline</button>" +
+                "</div>" +
+                '<div class="timeline-grid">' + cards + "</div>" +
+                "</div>";
+        }
+
+        /* ================================================================
+           RENDER: timeline page — CHROME-STYLE TABS
+           ================================================================ */
+        var SECTION_DEFS = [
+            { type: "period", title: "Time Periods", icon: "📅" },
+            { type: "exact", title: "Exact Dates", icon: "📌" },
+            { type: "monthyear", title: "Month & Year", icon: "📆" },
+            { type: "year", title: "Years", icon: "📖" }
+        ];
+
+        function buildTimelinePage(timeline) {
+            if (!timeline.activeTab) {
+                timeline.activeTab = "period";
+            }
+            // ensure active tab is valid
+            var valid = SECTION_DEFS.some(function(d) { return d.type === timeline.activeTab; });
+            if (!valid) timeline.activeTab = "period";
+
+            // Build tabs
+            var tabsHtml = SECTION_DEFS.map(function(def) {
+                var all = timeline.events.filter(function(e) { return e.type === def.type; });
+                var isActive = timeline.activeTab === def.type;
+                return '<button class="tab-btn ' + (isActive ? "active" : "") + '" data-tab="' + def.type +
+                    '" data-action="switch-tab">' +
+                    '<span class="tab-icon">' + def.icon + "</span>" +
+                    def.title +
+                    '<span class="tab-count">' + all.length + "</span>" +
+                    "</button>";
+            }).join("");
+
+            // Build active panel content
+            var activeDef = SECTION_DEFS.find(function(d) { return d.type === timeline.activeTab; });
+            var activeEvents = timeline.events.filter(function(e) {
+                return e.type === activeDef.type && matchesQuery(e, searchQuery);
+            }).sort(compareEvents);
+
+            var panelContent;
+            if (activeEvents.length === 0) {
+                panelContent = '<div class="panel-empty">' + (searchQuery ? "No matching events." :
+                    "No events yet in this section.") + "</div>";
+            } else {
+                panelContent = '<div class="timeline-events">' +
+                    activeEvents.map(function(e) { return buildEventItem(e); }).join("") +
+                    "</div>";
+            }
+
+            return '' +
+                '<div class="timeline-page">' +
+                '<div class="tp-header">' +
+                '<div>' +
+                '<div class="tp-title-row">' +
+                '<button class="btn btn-ghost btn-icon" data-action="go-home" aria-label="Back to dashboard">' +
+                ICONS.back + "</button>" +
+                '<span class="tp-color-dot" style="background:' + timeline.color + '"></span>' +
+                '<h1 class="tp-title">' + escapeHtml(timeline.name) + "</h1>" +
+                "</div>" +
+                (timeline.description ? '<p class="tp-desc">' + escapeHtml(timeline.description) + "</p>" : "") +
+                "</div>" +
+                '<div class="tp-actions">' +
+                '<button class="btn btn-ghost btn-icon" data-action="timeline-menu" data-id="' + timeline.id +
+                '" aria-label="Timeline options" aria-haspopup="true">' + ICONS.dots + "</button>" +
+                "</div>" +
+                "</div>" +
+                '<div class="tp-toolbar">' +
+                '<div class="search-box">' + ICONS.search +
+                '<input type="text" id="search-input" placeholder="Search events\u2026" value="' + escapeHtml(
+                    searchQuery) + '" aria-label="Search events">' +
+                "</div>" +
+                '<div class="tp-toolbar-right">' +
+                '<button class="btn btn-primary" data-action="open-add-event">' + ICONS.plus + " Add Event</button>" +
+                "</div>" +
+                "</div>" +
+                '<div class="tab-bar">' + tabsHtml + "</div>" +
+                '<div class="tab-panel" id="tab-panel">' + panelContent + "</div>" +
+                "</div>";
+        }
+
+        function buildEventItem(e) {
+            return '' +
+                '<div class="event-item" data-id="' + e.id + '">' +
+                '<div class="event-row">' +
+                '<span class="event-date-tag">' + escapeHtml(formatEventDate(e)) + "</span>" +
+                '<div class="event-info">' +
+                '<div class="event-name">' + escapeHtml(e.name) + "</div>" +
+                (e.description ? '<div class="event-desc">' + escapeHtml(e.description) + "</div>" : "") +
+                "</div>" +
+                '<div class="event-right">' +
+                starsMarkup(e.importance) +
+                '<span class="row-actions">' +
+                '<button class="btn btn-ghost btn-icon" data-action="edit-event" data-id="' + e.id +
+                '" aria-label="Edit event">' + ICONS.edit + "</button>" +
+                '<button class="btn btn-ghost btn-icon" data-action="delete-event" data-id="' + e.id +
+                '" aria-label="Delete event">' + ICONS.trash + "</button>" +
+                "</span>" +
+                "</div>" +
+                "</div>" +
+                "</div>";
+        }
+
+        function refreshTpContent() {
+            var timeline = getTimeline(route.timelineId);
+            if (!timeline) return;
+
+            // Update tabs
+            var tabBar = document.querySelector(".tab-bar");
+            if (tabBar) {
+                var tabsHtml = SECTION_DEFS.map(function(def) {
+                    var all = timeline.events.filter(function(e) { return e.type === def.type; });
+                    var isActive = timeline.activeTab === def.type;
+                    return '<button class="tab-btn ' + (isActive ? "active" : "") + '" data-tab="' + def.type +
+                        '" data-action="switch-tab">' +
+                        '<span class="tab-icon">' + def.icon + "</span>" +
+                        def.title +
+                        '<span class="tab-count">' + all.length + "</span>" +
+                        "</button>";
+                }).join("");
+                tabBar.innerHTML = tabsHtml;
+            }
+
+            // Update panel
+            var panel = document.getElementById("tab-panel");
+            if (panel) {
+                var activeDef = SECTION_DEFS.find(function(d) { return d.type === timeline.activeTab; });
+                var activeEvents = timeline.events.filter(function(e) {
+                    return e.type === activeDef.type && matchesQuery(e, searchQuery);
+                }).sort(compareEvents);
+                if (activeEvents.length === 0) {
+                    panel.innerHTML = '<div class="panel-empty">' + (searchQuery ? "No matching events." :
+                        "No events yet in this section.") + "</div>";
+                } else {
+                    panel.innerHTML = '<div class="timeline-events">' +
+                        activeEvents.map(function(e) { return buildEventItem(e); }).join("") +
+                        "</div>";
+                }
+            }
+        }
+
+        /* ================================================================
+           MODALS
+           ================================================================ */
+        var modalRoot = document.getElementById("modal-root");
+
+        function closeModal() { modalRoot.innerHTML = ""; }
+
+        function openModalShell(titleHtml, bodyHtml, footerHtml, opts) {
+            opts = opts || {};
+            modalRoot.innerHTML = '' +
+                '<div class="overlay" id="modal-overlay">' +
+                '<div class="modal" role="dialog" aria-modal="true" aria-label="' + escapeHtml(opts.ariaLabel ||
+                    "Dialog") + '">' +
+                '<div class="modal-header"><h2>' + titleHtml + '</h2><button class="btn btn-ghost btn-icon" id="modal-close-x" aria-label="Close">\u2715</button></div>' +
+                '<div class="modal-body">' + bodyHtml + "</div>" +
+                '<div class="modal-footer">' + footerHtml + "</div>" +
+                "</div>" +
+                "</div>";
+            document.getElementById("modal-overlay").addEventListener("mousedown", function(e) {
+                if (e.target.id === "modal-overlay") closeModal();
+            });
+            document.getElementById("modal-close-x").addEventListener("click", closeModal);
+            var firstField = modalRoot.querySelector("input, textarea, select, button.btn-primary");
+            if (firstField) setTimeout(function() { firstField.focus(); }, 10);
+        }
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                if (modalRoot.innerHTML !== "") { closeModal(); return; }
+                closePopover();
+            }
+        });
+
+        /* ---------- Create / Edit Timeline modal ---------- */
+        function openTimelineFormModal(existing) {
+            var isEdit = !!existing;
+            var name = existing ? existing.name : "";
+            var desc = existing ? existing.description : "";
+            var color = existing ? existing.color : ACCENT_PRESETS[0];
+
+            var swatches = ACCENT_PRESETS.map(function(c) {
+                return '<button type="button" class="swatch ' + (c === color ? "selected" : "") + '" data-color="' +
+                    c + '" style="background:' + c + '" aria-label="Choose color ' + c + '"></button>';
+            }).join("");
+
+            var body = '' +
+                '<div class="field"><label for="f-name">Timeline Name</label><input type="text" id="f-name" value="' +
+                escapeHtml(name) + '" placeholder="e.g. The First World War" maxlength="80"></div>' +
+                '<div class="field"><label for="f-desc">Description <span class="hint">(optional)</span></label><textarea id="f-desc" placeholder="What is this timeline about?">' +
+                escapeHtml(desc) + "</textarea></div>" +
+                '<div class="field"><label>Accent Color</label><div class="color-swatches" id="f-swatches">' +
+                swatches + '</div><input type="hidden" id="f-color" value="' + color + '"></div>';
+
+            var footer = '<button class="btn btn-secondary" id="modal-cancel">Cancel</button><button class="btn btn-primary" id="modal-submit">' +
+                (isEdit ? "Save Changes" : "Create") + "</button>";
+
+            openModalShell(isEdit ? "Edit Timeline" : "Create Timeline", body, footer, { ariaLabel: "Create timeline" });
+
+            modalRoot.querySelectorAll(".swatch").forEach(function(sw) {
+                sw.addEventListener("click", function() {
+                    modalRoot.querySelectorAll(".swatch").forEach(function(s) { s.classList.remove(
+                        "selected"); });
+                    sw.classList.add("selected");
+                    document.getElementById("f-color").value = sw.dataset.color;
+                });
+            });
+            document.getElementById("modal-cancel").addEventListener("click", closeModal);
+            document.getElementById("modal-submit").addEventListener("click", function() {
+                var nameVal = document.getElementById("f-name").value.trim();
+                if (!nameVal) { showToast("Give the timeline a name first.");
+                    document.getElementById("f-name").focus(); return; }
+                var descVal = document.getElementById("f-desc").value.trim();
+                var colorVal = document.getElementById("f-color").value;
+                if (isEdit) {
+                    existing.name = nameVal;
+                    existing.description = descVal;
+                    existing.color = colorVal;
+                    saveData();
+                    closeModal();
+                    renderApp();
+                    showToast("Timeline updated.");
+                } else {
+                    var t = { id: genId(), name: nameVal, description: descVal, color: colorVal, events: [],
+                        activeTab: "period" };
+                    state.timelines.push(t);
+                    saveData();
+                    closeModal();
+                    openTimeline(t.id);
+                    showToast("Timeline created.");
+                }
+            });
+        }
+
+        /* ---------- Delete confirm modal ---------- */
+        function openConfirmModal(title, message, onConfirm) {
+            var body = '<p class="confirm-text">' + message + "</p>";
+            var footer =
+                '<button class="btn btn-secondary" id="modal-cancel">Cancel</button><button class="btn btn-danger" id="modal-confirm" style="border-color:var(--danger);">Delete</button>';
+            openModalShell(title, body, footer, { ariaLabel: title });
+            document.getElementById("modal-cancel").addEventListener("click", closeModal);
+            document.getElementById("modal-confirm").addEventListener("click", function() {
+                onConfirm();
+                closeModal();
+            });
+        }
+
+        /* ---------- Add Event: step 1, choose type ---------- */
+        function openAddEventModal() {
+            var body = '<div class="type-picker">' +
+                typeOptionHtml("period", "Time Period", "1914\u20131918") +
+                typeOptionHtml("exact", "Exact Date", "24 March 1915") +
+                typeOptionHtml("monthyear", "Month & Year", "March 1915") +
+                typeOptionHtml("year", "Year", "1918") +
+                "</div>";
+            openModalShell("Choose Event Type", body, "", { ariaLabel: "Choose event type" });
+            modalRoot.querySelectorAll(".type-option").forEach(function(btn) {
+                btn.addEventListener("click", function() {
+                    var type = btn.dataset.type;
+                    closeModal();
+                    openEventFormModal(type, null);
+                });
+            });
+        }
+
+        function typeOptionHtml(type, label, example) {
+            return '<button type="button" class="type-option" data-type="' + type + '">' + ICONS[type] +
+                '<span class="t-label">' + label + '</span><span class="t-example">' + example + "</span></button>";
+        }
+
+        /* ---------- Add/Edit Event: step 2, the form ---------- */
+        function openEventFormModal(type, existing) {
+            var timeline = getTimeline(route.timelineId);
+            var isEdit = !!existing;
+            var e = existing || { type: type, name: "", description: "", importance: 1 };
+            var monthOptions = MONTHS.map(function(m, i) {
+                return '<option value="' + (i + 1) + '"' + (e.month === i + 1 ? " selected" : "") + ">" + m +
+                "</option>";
+            }).join("");
+
+            var typeFields = "";
+            if (e.type === "period") {
+                typeFields = '<div class="field-row">' +
+                    '<div class="field"><label for="f-start">Start Year</label><input type="number" id="f-start" value="' +
+                    (e.startYear !== undefined ? e.startYear : "") + '"></div>' +
+                    '<div class="field"><label for="f-end">End Year</label><input type="number" id="f-end" value="' +
+                    (e.endYear !== undefined ? e.endYear : "") + '"></div>' +
+                    "</div>";
+            } else if (e.type === "exact") {
+                typeFields = '<div class="field-row">' +
+                    '<div class="field"><label for="f-day">Day</label><input type="number" id="f-day" min="1" max="31" value="' +
+                    (e.day !== undefined ? e.day : "") + '"></div>' +
+                    '<div class="field"><label for="f-month">Month</label><select id="f-month"><option value="">\u2014</option>' +
+                    monthOptions + "</select></div>" +
+                    '<div class="field"><label for="f-year">Year</label><input type="number" id="f-year" value="' +
+                    (e.year !== undefined ? e.year : "") + '"></div>' +
+                    "</div>";
+            } else if (e.type === "monthyear") {
+                typeFields = '<div class="field-row">' +
+                    '<div class="field"><label for="f-month">Month</label><select id="f-month"><option value="">\u2014</option>' +
+                    monthOptions + "</select></div>" +
+                    '<div class="field"><label for="f-year">Year</label><input type="number" id="f-year" value="' +
+                    (e.year !== undefined ? e.year : "") + '"></div>' +
+                    "</div>";
+            } else {
+                typeFields = '<div class="field"><label for="f-year">Year</label><input type="number" id="f-year" value="' +
+                    (e.year !== undefined ? e.year : "") + '"></div>';
+            }
+
+            var body = '' +
+                '<span class="type-badge">' + ICONS[e.type] + " " + typeLabel(e.type) + "</span>" +
+                typeFields +
+                '<div class="field"><label for="f-name">Event Name</label><input type="text" id="f-name" value="' +
+                escapeHtml(e.name) + '" placeholder="e.g. Battle of the Marne" maxlength="120"></div>' +
+                '<div class="field"><label for="f-desc">Description</label><textarea id="f-desc" placeholder="A short note about this event">' +
+                escapeHtml(e.description) + "</textarea></div>" +
+                '<div class="field"><label>Importance</label><div class="star-picker" id="f-importance">' +
+                [1, 2, 3].map(function(n) {
+                    return '<button type="button" class="star-btn ' + (e.importance >= n ? "active" : "") +
+                        '" data-value="' + n + '">' + "\u2605".repeat(n) + "</button>";
+                }).join("") +
+                "</div></div>";
+
+            var footerLeft = isEdit ?
+                '<button class="btn btn-danger" id="modal-delete" style="margin-right:auto;">' + ICONS.trash +
+                " Delete</button>" :
+                "";
+            var footer = footerLeft +
+                '<button class="btn btn-secondary" id="modal-cancel">Cancel</button><button class="btn btn-primary" id="modal-submit">' +
+                (isEdit ? "Save Changes" : "Add Event") + "</button>";
+            var footerWrap = '<div style="display:flex;width:100%;gap:10px;">' + footer + "</div>";
+
+            openModalShell(isEdit ? "Edit Event" : "Add Event", body, footerWrap, { ariaLabel: "Event form" });
+
+            var importanceVal = e.importance;
+            modalRoot.querySelectorAll(".star-btn").forEach(function(btn) {
+                btn.addEventListener("click", function() {
+                    importanceVal = parseInt(btn.dataset.value, 10);
+                    modalRoot.querySelectorAll(".star-btn").forEach(function(b) {
+                        b.classList.toggle("active", parseInt(b.dataset.value, 10) <= importanceVal);
+                    });
+                });
+            });
+
+            document.getElementById("modal-cancel").addEventListener("click", closeModal);
+            var delBtn = document.getElementById("modal-delete");
+            if (delBtn) {
+                delBtn.addEventListener("click", function() {
+                    closeModal();
+                    openConfirmModal("Delete Event", "Delete <strong>" + escapeHtml(e.name) +
+                        "</strong>? This can't be undone.", function() {
+                        timeline.events = timeline.events.filter(function(ev) { return ev.id !== e
+                            .id; });
+                        saveData();
+                        renderApp();
+                        showToast("Event deleted.");
+                    });
+                });
+            }
+
+            document.getElementById("modal-submit").addEventListener("click", function() {
+                var name = document.getElementById("f-name").value.trim();
+                if (!name) { showToast("Give the event a name first.");
+                    document.getElementById("f-name").focus(); return; }
+
+                var built = { type: e.type, name: name, description: document.getElementById("f-desc").value
+                        .trim(), importance: importanceVal };
+
+                if (e.type === "period") {
+                    var startY = parseInt(document.getElementById("f-start").value, 10);
+                    var endY = parseInt(document.getElementById("f-end").value, 10);
+                    if (isNaN(startY) || isNaN(endY)) { showToast("Enter both a start and end year."); return; }
+                    if (endY < startY) { showToast("End year must be on or after the start year."); return; }
+                    built.startYear = startY;
+                    built.endYear = endY;
+                } else if (e.type === "exact") {
+                    var day = parseInt(document.getElementById("f-day").value, 10);
+                    var month = parseInt(document.getElementById("f-month").value, 10);
+                    var year = parseInt(document.getElementById("f-year").value, 10);
+                    if (isNaN(day) || isNaN(month) || isNaN(year)) { showToast("Enter a day, month, and year.");
+                        return; }
+                    if (day < 1 || day > 31) { showToast("Day should be between 1 and 31."); return; }
+                    built.day = day;
+                    built.month = month;
+                    built.year = year;
+                } else if (e.type === "monthyear") {
+                    var month2 = parseInt(document.getElementById("f-month").value, 10);
+                    var year2 = parseInt(document.getElementById("f-year").value, 10);
+                    if (isNaN(month2) || isNaN(year2)) { showToast("Enter both a month and year."); return; }
+                    built.month = month2;
+                    built.year = year2;
+                } else {
+                    var year3 = parseInt(document.getElementById("f-year").value, 10);
+                    if (isNaN(year3)) { showToast("Enter a year."); return; }
+                    built.year = year3;
+                }
+
+                if (isEdit) {
+                    Object.assign(existing, built);
+                    saveData();
+                    closeModal();
+                    renderApp();
+                    showToast("Event updated.");
+                } else {
+                    built.id = genId();
+                    timeline.events.push(built);
+                    saveData();
+                    closeModal();
+                    renderApp();
+                    showToast("Event added.");
+                }
+            });
+        }
+
+        /* ================================================================
+           POPOVER MENUS
+           ================================================================ */
+        var popoverRoot = (function() {
+            var d = document.createElement("div");
+            d.id = "popover-root";
+            document.body.appendChild(d);
+            return d;
+        })();
+
+        function closePopover() { popoverRoot.innerHTML = ""; }
+
+        function openMenu(anchor, items) {
+            closePopover();
+            var rect = anchor.getBoundingClientRect();
+            var menu = document.createElement("div");
+            menu.className = "menu-pop";
+            menu.style.position = "absolute";
+            menu.style.top = (window.scrollY + rect.bottom + 6) + "px";
+            var left = window.scrollX + rect.right - 180;
+            menu.style.left = Math.max(10, left) + "px";
+            menu.innerHTML = items.map(function(it, i) {
+                return '<button type="button" data-i="' + i + '" class="' + (it.danger ? "danger" : "") +
+                    '">' + (it.icon || "") + "<span>" + it.label + "</span></button>";
+            }).join("");
+            popoverRoot.appendChild(menu);
+            menu.querySelectorAll("button").forEach(function(btn) {
+                btn.addEventListener("click", function() {
+                    var it = items[parseInt(btn.dataset.i, 10)];
+                    closePopover();
+                    it.onSelect();
+                });
+            });
+            setTimeout(function() {
+                document.addEventListener("mousedown", onOutsidePopover);
+            }, 0);
+        }
+
+        function onOutsidePopover(e) {
+            if (!popoverRoot.contains(e.target)) {
+                closePopover();
+                document.removeEventListener("mousedown", onOutsidePopover);
+            }
+        }
+
+        function openTimelineMenu(anchor, timelineId) {
+            var t = getTimeline(timelineId);
+            openMenu(anchor, [
+                { label: "Edit Timeline", icon: ICONS.edit, onSelect: function() { openTimelineFormModal(t); } },
+                { label: "Delete Timeline", icon: ICONS.trash, danger: true, onSelect: function() {
+                        openConfirmModal("Delete Timeline", "Delete <strong>" + escapeHtml(t.name) +
+                            "</strong> and all " + pluralize(t.events.length, "event") +
+                            "? This can't be undone.", function() {
+                            state.timelines = state.timelines.filter(function(x) { return x.id !== t
+                                .id; });
+                            saveData();
+                            if (route.timelineId === t.id) route = { view: "dashboard",
+                                timelineId: null };
+                            renderApp();
+                            showToast("Timeline deleted.");
+                        });
+                    } }
+            ]);
+        }
+
+        /* ================================================================
+           EVENT DELEGATION
+           ================================================================ */
+        var appEl = document.getElementById("app");
+
+        appEl.addEventListener("click", function(e) {
+            var target = e.target.closest("[data-action]");
+            if (!target) return;
+            var action = target.dataset.action;
+
+            switch (action) {
+                case "go-home":
+                    goHome();
+                    break;
+                case "open-create-timeline":
+                    openTimelineFormModal(null);
+                    break;
+                case "open-timeline":
+                    openTimeline(target.dataset.id);
+                    break;
+                case "timeline-menu":
+                    openTimelineMenu(target, target.dataset.id);
+                    break;
+                case "switch-tab": {
+                    var timeline = getTimeline(route.timelineId);
+                    var tab = target.dataset.tab;
+                    if (timeline && tab && timeline.activeTab !== tab) {
+                        timeline.activeTab = tab;
+                        saveData();
+                        refreshTpContent();
+                    }
+                    break;
+                }
+                case "open-add-event":
+                    openAddEventModal();
+                    break;
+                case "edit-event": {
+                    var tlx = getTimeline(route.timelineId);
+                    var ev = tlx.events.find(function(x) { return x.id === target.dataset.id; });
+                    if (ev) openEventFormModal(ev.type, ev);
+                    break;
+                }
+                case "delete-event": {
+                    var tly = getTimeline(route.timelineId);
+                    var evd = tly.events.find(function(x) { return x.id === target.dataset.id; });
+                    if (evd) {
+                        openConfirmModal("Delete Event", "Delete <strong>" + escapeHtml(evd.name) +
+                            "</strong>? This can't be undone.", function() {
+                            tly.events = tly.events.filter(function(x) { return x.id !== evd.id; });
+                            saveData();
+                            renderApp();
+                            showToast("Event deleted.");
+                        });
+                    }
+                    break;
+                }
+            }
+        });
+
+        appEl.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" || e.key === " ") {
+                var card = e.target.closest(".timeline-card");
+                if (card && e.target === card) {
+                    e.preventDefault();
+                    openTimeline(card.dataset.id);
+                }
+            }
+        });
+
+        appEl.addEventListener("input", function(e) {
+            if (e.target.id === "search-input") {
+                searchQuery = e.target.value;
+                refreshTpContent();
+            }
+        });
+
+        /* ================================================================
+           INIT
+           ================================================================ */
+        renderApp();
+    </script>
 </body>
 </html>
