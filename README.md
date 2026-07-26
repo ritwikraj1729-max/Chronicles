@@ -1,107 +1,129 @@
-# 📜 Chronicle – Timeline Management Web App
+# Chronicles
 
-**Chronicle** is a fully offline, production‑quality web application for organizing personal histories, project roadmaps, historical timelines, and any sequence of events. It stores all data in your browser’s `localStorage`, so everything works without an internet connection or a backend server.
-
-> **Live demo:** just open `index.html` in any modern browser – no build steps, no dependencies.
+**A single‑file web application for history students to organise events into structured, searchable timelines.**  
+No backend, no dependencies — just open the HTML file and start chronicling.
 
 ---
 
 ## ✨ Features
 
-- **Unlimited timelines** – create as many as you need (e.g. *My Life*, *History of India*, *Company Journey*, *Programming Journey*).
-- **Unlimited events per timeline** – automatically sorted chronologically (supports year‑only, month+year, and full dates).
-- **Two viewing modes**:
-  - **Vertical Timeline** – beautiful node‑based layout with expandable descriptions.
-  - **List View** – clean table with sortable columns.
-- **Live search** – instantly filter events by title, description, date, or category.
-- **Statistics** – total events, oldest/newest event, category count, last edit date.
-- **Categories** – create custom categories with colours; events inherit category colours.
-- **Full CRUD** – create, rename, delete timelines; add, edit, delete events (with confirmation).
-- **Export / Import** – backup or transfer a timeline (and its events) as a JSON file.
-- **Theme** – dark mode (default) and light mode, stored persistently.
-- **Responsive** – works on desktop, tablet, and mobile.
-- **Accessible** – semantic HTML, ARIA labels, keyboard navigation, focus states.
-- **Blazing fast** – optimised for hundreds or thousands of events.
+- **Timeline management** – Create, edit, and delete timelines. Each timeline has a name, description, and a custom accent colour.
+- **Four event types** – Events are categorised into:
+  - **Time Periods** (start–end year)
+  - **Exact Dates** (day, month, year)
+  - **Month & Year** (month + year)
+  - **Years** (single year)
+- **Chrome‑style tab bar** – Switch between the four types with a single click. Each tab shows the number of events it contains.
+- **Vertical timeline display** – Events inside a tab are shown as a connected, chronological timeline with date markers and importance stars (★ to ★★★).
+- **Search** – Filter events by name or description across all tabs simultaneously.
+- **Persistent storage** – All data is saved automatically in your browser’s `localStorage`. Close and reopen the page – your work is still there.
+- **Responsive** – Works on desktop, tablet, and mobile.
+- **Dark mode** – Premium dark interface inspired by GitHub Dark and Linear.
+- **Accessible** – Semantic HTML, keyboard navigation, visible focus states, and high contrast.
 
 ---
 
 ## 🚀 Getting Started
 
-1. Download the three files:
-   - `index.html`
-   - `style.css`
-   - `script.js`
-2. Place them in the same folder.
-3. Open `index.html` in your browser.
-4. That’s it – the app is ready to use.
-
-All data is automatically saved to `localStorage` as you work.
+1. **Download** the `index.html` file.
+2. **Open** it in any modern browser (Chrome, Firefox, Edge, Safari, etc.).
+3. Start creating timelines and adding events – no internet connection required.
 
 ---
 
-## 📂 File Structure
+## 📚 How to Use
 
-| File | Description |
-|------|-------------|
-| `index.html` | Main HTML structure (semantic, accessible). |
-| `style.css` | Complete styling with CSS variables, dark/light themes, responsive layouts. |
-| `script.js` | Vanilla JavaScript (ES6+) – data management, UI rendering, event handling, `localStorage` persistence. |
+### Dashboard
+- Click **“Create Timeline”** to start a new timeline.
+- Each timeline card shows its name, description (if any), and event count.
+- Click a card to open it, or use the **⋮** menu to edit or delete.
 
-No external libraries, frameworks, or build tools are used.
+### Timeline View
+- The **tab bar** lets you switch between the four event types.
+- Each tab displays only events of that type, sorted chronologically.
+- Events are shown as a vertical timeline with:
+  - A **date marker** (formatted appropriately for the type)
+  - The **event name** and optional **description**
+  - **Importance stars** (1–3)
+  - **Edit** and **Delete** buttons (appear on hover)
+- The **search bar** filters events by name or description across all tabs.
+
+### Adding an Event
+1. Click **“Add Event”**.
+2. Choose the event type (Time Period, Exact Date, Month & Year, or Year).
+3. Fill in the event name, description (optional), importance, and the specific date fields.
+4. Click **“Add Event”** – it will appear in the correct tab, automatically sorted.
+
+### Editing / Deleting
+- **Timeline**: Use the ⋮ menu on the dashboard or timeline page to edit or delete the entire timeline.
+- **Event**: Hover over an event and click the ✎ or 🗑 buttons.
 
 ---
 
-## 🧠 How It Works
+## 🧰 Technology
 
-- **Data Model**: timelines, events, categories, and settings are stored as plain JavaScript objects.
-- **Sorting**: every event has a `dateSort` field (milliseconds since epoch) computed from the human‑readable `dateDisplay`. The app parses year‑only, month+year, and full dates automatically.
-- **Persistence**: all changes are immediately written to `localStorage` under the key `chronicle_data`. The app restores your last opened timeline and theme on reload.
-- **Rendering**: UI updates are DOM‑based, with efficient re‑rendering only when data changes.
+- **HTML5** – Semantic markup
+- **CSS3** – Custom properties, flexible layouts, animations
+- **Vanilla JavaScript** – No frameworks, no libraries
+- **localStorage** – Persistent client‑side storage
 
----
-
-## 🎨 Customisation
-
-- **Themes**: toggle between dark and light using the ☀️/🌙 button in the top bar. Your preference is stored.
-- **Accent colour**: defined in CSS variables (`--accent`). You can change it globally in `style.css` (default is Indigo `#6366f1`).
-- **Icons**: choose any emoji for a timeline or event (e.g., 📚, 💼, 🌍).
+The entire application is contained in a single `index.html` file (CSS and JavaScript are embedded).
 
 ---
 
-## 📦 Data Export & Import
+## 📁 File Structure
 
-- **Export**: click the **Export** button on a timeline’s page – you’ll get a JSON file containing the timeline, all its events, and category references.
-- **Import**: click **Import** and select a previously exported JSON file. The timeline will be added with a new ID, keeping your existing data intact.
+```
+index.html      # Single file containing all HTML, CSS, and JavaScript
+```
+
+---
+
+## 🎨 Design Notes
+
+- **Dark mode** – Charcoal background, soft gray panels, subtle shadows.
+- **Accent colour** – Calm blue used sparingly for emphasis.
+- **Typography** – System fonts with a serif (`Iowan Old Style`) for dates and numerals to add period character.
+- **Animations** – Smooth, tasteful, and non‑distracting (respects `prefers-reduced-motion`).
+
+---
+
+## 📱 Responsive
+
+- Desktop – full layout with tab bar.
+- Tablet – adjusted spacing and font sizes.
+- Mobile – stacked layout, tabs shrink, timeline markers scale down.
 
 ---
 
 ## ♿ Accessibility
 
 - All interactive elements are keyboard‑accessible.
-- Focus indicators are clearly visible.
-- ARIA roles and labels are used where appropriate.
-- Colour contrast meets WCAG standards.
+- Focus indicators are visible (and only appear when using keyboard).
+- Appropriate ARIA labels and roles.
+- Good colour contrast throughout.
 
 ---
 
-## 🛠️ Development Notes
+## 📦 Storage
 
-- The entire app is contained in three files, making it easy to fork, modify, or embed.
-- No external dependencies – ideal for air‑gapped or low‑bandwidth environments.
-- To reset your data, clear `localStorage` via DevTools or use `localStorage.removeItem('chronicle_data')`.
+Data is stored in the browser’s `localStorage` under the key `chronicles_data_v1`.  
+No login, no server, no cloud – your data stays on your device.
+
+---
+
+## 🤝 Contributing
+
+This is a self‑contained project. If you wish to contribute, feel free to fork and submit a pull request.  
+For major changes, please open an issue first to discuss what you would like to change.
 
 ---
 
 ## 📄 License
 
-This project is open‑source and available under the [MIT License](LICENSE) (add a `LICENSE` file if you wish).
+MIT – use it, modify it, share it.
 
 ---
 
-## 🙌 Acknowledgements
-
-Built with pure HTML, CSS, and vanilla JavaScript – a testament to what’s possible without frameworks.
-
----
-
-**Happy chronicling!** 🕰️
+**Made for history students, by a history enthusiast.**  
+*Organise your past, one event at a time.*
